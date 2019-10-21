@@ -1,8 +1,5 @@
 from memcache_db import MemcacheDB
 
-db = MemcacheDB('database.sqlite')
-index = open('index.html', 'w')
-
 message = """
 <html>
 	<head>
@@ -27,15 +24,32 @@ message = """
 </html>
 """
 
-dump = ""
+class HTMLCompiler:
+    def __init__(self):
+        self.msg = message
+        self.db = MemcacheDB('database.sqlite')
+        self.run()
 
-#build the memcache-row vue object with slotted data
-for row in db.fetch():
-	dump += ("<memcache-row>" +
-            "<template slot='key'>" + row[0] + '</template>' +
-            "<template slot='value'>" + row[1] + "</template></memcache-row>")
+    def open(self):
+        self.page = open('index.html', 'w')
 
-#write index.html
-index.write(message % (dump, ))
-index.close()
+    def close(self):
+        self.page.close()
+
+    def build(self):
+        dump = ""
+        for row in self.db.fetch():
+            dump += ("<memcache-row>" +
+                "<template slot='key'>" + row[0] + '</template>' +
+                "<template slot='value'>" + row[1] + "</template></memcache-row>")
+        return dump
+
+    def compile(self):
+        self.page.write(self.msg % (self.build(), ))
+
+    def run(self):
+        self.open()
+        self.compile()
+        self.close()
+
 
