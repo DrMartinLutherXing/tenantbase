@@ -1,4 +1,4 @@
-import sys, index, subprocess
+import sys, subprocess
 from memcache_socket import MemcacheSocket
 
 p = subprocess.Popen([sys.executable, './web_server.py'],
