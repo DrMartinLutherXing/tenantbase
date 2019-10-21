@@ -18,14 +18,40 @@ class MemcacheSocket:
 	self.sock.bind((HOST, PORT))
 	self.sock.listen(1)
 
-    def get(self, key):
-        return self.db.get(key)
+    def get(self, req):
+        try:
+            row = self.db.get(req[1])
+            resp = "VALUE %s %i 0 %i\r\n%s\r\nEND\r\n" % (row[0], row[2], len(row[1]), row[1])
+        except KeyError:
+            resp = "END\r\n"
+        return resp
 
-    def set(self, key, val, flags):
-        self.db.insert(key, val, flags)
+    def set(self, req, conn):
+        if len(req) == 5:
+            buffer_size = int(req[4])
+            value = ""
+            #go thru buffer building value until full size specified
+            while buffer_size > 0:
+                _BUFFER = buffer_size if buffer_size < BUFFER else BUFFER
+                _value = conn.recv(_BUFFER)
+                if not _value: break
+                value += _value
+                buffer_size -= BUFFER
+            #clear newline
+            conn.recv(BUFFER)
+            self.db.insert(req[1], value, int(req[2]))
+            resp = "STORED\r\n"
+        else:
+            resp = "CLIENT_ERROR insufficient arguments\r\n"
+        return resp
 
-    def delete(self, key):
-        self.db.clear(key)
+    def delete(self, req):
+        try:
+            row = self.db.clear(req[1])
+            resp = "DELETED\r\n"
+        except KeyError:
+            resp = "NOT_FOUND\r\n"
+        return resp
 
     def handle(self, conn):
         data = conn.recv(BUFFER)[::]
@@ -38,33 +64,11 @@ class MemcacheSocket:
             if req[0] not in PROTOCOL:
                 resp = "ERROR\r\n"
             elif req[0] == 'get':
-                try:
-                    row = self.get(req[1])
-                    resp = "VALUE %s %i 0 %i\r\n%s\r\nEND\r\n" % (row[0], row[2], len(row[1]), row[1])
-                except KeyError:
-                    resp = "END\r\n"
+                resp = self.get(req)
             elif req[0] == 'set':
-                if len(req) == 5:
-                    buffer_size = int(req[4])
-                    value = ""
-                    while buffer_size > 0:
-                        _BUFFER = buffer_size if buffer_size < BUFFER else BUFFER
-                        _value = conn.recv(_BUFFER)
-                        if not _value: break
-                        value += _value
-                        buffer_size -= BUFFER
-                    #clear newline
-                    conn.recv(BUFFER)
-                    self.set(req[1], value, int(req[2]))
-                    resp = "STORED\r\n"
-                else:
-                    resp = "CLIENT_ERROR insufficient arguments\r\n"
+                resp = self.set(req, conn)
             elif req[0] == 'delete':
-                try:
-                    row = self.delete(req[1])
-                    resp = "DELETED\r\n"
-                except KeyError:
-                    resp = "NOT_FOUND\r\n"
+                resp = self.delete(req)
         conn.send(resp)
 
     def run(self):
