@@ -25,5 +25,12 @@ main.js builds a Vue component
 
 setShowing method toggles boolean `showing` value on component which in turn adjusts visibility of associate key
 
+## socket
+`memcache_socket.py` creates a MemcacheSocket class
+
+socket listens on port 11211 and tries to handle set, get and delete requests
+
+interacts with an instantiated instance of MemcacheDB
+
 ## main
 `main.py` simple script to take optional db file name, running web server and socket server
