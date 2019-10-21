@@ -1,14 +1,18 @@
 #!/usr/bin/env python
+import os
+from index import HTMLCompiler
+from BaseHTTPServer import HTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
 
-import SimpleHTTPServer
-import SocketServer
+index_page = HTMLCompiler()
 
-PORT = 8000
+class MyHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/':
+            index_page.run()
+        return SimpleHTTPRequestHandler.do_GET(self)
 
-Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-
-httpd = SocketServer.TCPServer(("", PORT), Handler)
-
-print "serving at port", PORT
-httpd.serve_forever()
+if __name__ == '__main__':
+    httpd = HTTPServer(('127.0.0.1', 8000), MyHandler)
+    httpd.serve_forever()
 
