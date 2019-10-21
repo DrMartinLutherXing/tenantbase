@@ -1,10 +1,10 @@
 from memcache_db import MemcacheDB
 
 print "connecting to db.sqlite"
-db = MemcacheDB('db.sqlite')
+db = MemcacheDB('database.sqlite')
 
 print "testing: insert('test', 'lorem ipsum', 123)"
-#db.insert('test', 'lorem ipsum', 123)
+db.insert('test', 'lorem ipsum', 123)
 
 print "testing: get key"
 print db.get('test')
