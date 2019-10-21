@@ -7,19 +7,21 @@ message = """
 <html>
 	<head>
 		<title>Monitor Memcache</title>
+                <style> .hidden { visibility: hidden; } </style>
+                <style> .key { text-decoration: underline; color: dodgerblue; } </style>
+
 	</head>
 	<body>
 
-            <table>
-
-                <tr>
-                    <th>KEY</th>
-                    <th>VALUE</th>
-                </tr>
-
+            <!-- Vue binding element with memcache-row components -->
+            <div id="root">
                 %s
+            </div>
 
-            </table>
+            <script src="https://unpkg.com/vue@2.1.3/dist/vue.js"></script>
+
+            <!-- Vue component for memcache-row -->
+            <script src="main.js"></script>
 
 	</body>
 </html>
@@ -27,9 +29,13 @@ message = """
 
 dump = ""
 
+#build the memcache-row vue object with slotted data
 for row in db.fetch():
-    dump += ("<tr><td>" + row[0] + "</td><td>" + row[1] + "</td></tr>")
+	dump += ("<memcache-row>" +
+            "<template slot='key'>" + row[0] + '</template>' +
+            "<template slot='value'>" + row[1] + "</template></memcache-row>")
 
+#write index.html
 index.write(message % (dump, ))
 index.close()
 
