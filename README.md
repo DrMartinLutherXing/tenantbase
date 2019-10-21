@@ -5,3 +5,6 @@ use basic example [basic example](https://docs.python.org/2/library/simplehttpse
 
 ## sqlite db
 create basic object to interface with sqlite3, `MemcacheDB`
+
+## testing
+basic python script `sql_test.py` for MemcacheDB
