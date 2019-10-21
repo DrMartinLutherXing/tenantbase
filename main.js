@@ -18,8 +18,6 @@ Vue.component('memcache-row', {
 		
 		setShowing() {
 
-			console.log(this.showing);
-
 			this.showing = true;
 
 		}
